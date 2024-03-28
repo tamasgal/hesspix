@@ -1,15 +1,6 @@
 hesspix 
 =======
 
-.. image:: https://git.ecap.work/tgal/hesspix/badges/master/pipeline.svg
-    :target: https://git.ecap.work/tgal/hesspix/pipelines
-
-.. image:: https://git.ecap.work/tgal/hesspix/badges/master/coverage.svg
-    :target: https://tgal.pages.ecap.work/hesspix/coverage
-
-.. image:: https://git.km3net.de/examples/km3badges/-/raw/master/docs-latest-brightgreen.svg
-    :target: https://tgal.pages.ecap.work/hesspix
-
 ``hesspix`` is a tiny library to read HESS pixel info from ROOT files.
 
 Usage
