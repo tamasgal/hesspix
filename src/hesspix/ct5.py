@@ -13,43 +13,55 @@ class CT5Reader:
     """
     def __init__(self, filename):
         self._fobj = f = uproot.open(filename)
-        self._event_ids = f["DST_tree/EventHeader/fGlobalEvtNum"].array()
-        self._bunch_ids = f["DST_tree/EventHeader/fGlobalBunchNum"].array()
+        self._event_nrs = f["DST_tree/EventHeader/fGlobalEvtNum"].array()
+        self._bunch_nrs = f["DST_tree/EventHeader/fGlobalBunchNum"].array()
 
-        self._nevents = len(self._event_ids)
+        self._nevents = len(self._event_nrs)
 
     def __len__(self):
         return self._nevents
 
     def __iter__(self):
-        self._current_event_id = 0
+        self._idx = 0
         return self
 
     def __next__(self):
-        if self._current_event_id < len(self):
-            event = self.get_event(self._current_event_id)
-            self._current_event_id += 1
+        if self._idx < len(self):
+            event = self[self._idx]
+            self._idx += 1
             return event
         else:
             raise StopIteration
 
-    def get_bunch(self, bunch_id):
+    def get(self, event_nr=0, bunch_nr=0):
         """
-        Get events for a given bunch ID.
+        Get event with a given event number and bunch number.
         """
-        indices = np.where(self._bunch_ids == bunch_id)[0]
-        return [self.get_event(idx) for idx in indices]
+        indices = np.where((self._event_nrs == event_nr) & (self._bunch_nrs == bunch_nr))[0]
+        if len(indices) == 1:
+            return self[indices[0]]
+        elif len(indices) == 0:
+            raise IndexError(f"No event found with event number '{event_nr}' in bunch '{bunch_nr}'")
+        else:
+            raise ValueError("Multiple events found with the same event number and bunch number")
 
-    def get_event(self, event_id):
+    def get_bunch(self, bunch_nr):
         """
-        Get event of a given event ID.
+        Get all events for a given bunch number.
+        """
+        indices = np.where(self._bunch_ids == bunch_nr)[0]
+        return [self[idx] for idx in indices]
+
+    def __getitem__(self, idx):
+        """
+        Get event of a given event ID (index in the file).
         """
         raw = self._fobj["DST_tree/IntensityData_Clean0714NN2_5"].array(
             uproot.interpretation.jagged.AsJagged(
                 uproot.interpretation.numerical.AsDtype("b"),
                 header_bytes=0),
-            entry_start=event_id,
-            entry_stop=event_id+1
+            entry_start=idx,
+            entry_stop=idx+1
         )
         s = io.BytesIO(np.array(raw))
 
@@ -74,22 +86,29 @@ class CT5Reader:
         if intensity_data_mode != 2: # enum value for `All`, presumable
             raise ValueError(f"Unsupported intensity data mode: {intensity_data_mode}")
 
-        return np.core.records.fromarrays(
-            [
-                np.array(pixmask2pixelids(pixmask), dtype="i"),
-                np.frombuffer(s.read(npix*4), dtype=">f"),
-                np.frombuffer(s.read(npix), dtype="b"),
-                np.frombuffer(s.read(npix*4), dtype=">f")
-            ],
-            names=["id", "intensity", "channel", "time"]
+        return Event(
+            self._event_nrs[idx],
+            self._bunch_nrs[idx],
+            np.core.records.fromarrays(
+                [
+                    np.array(pixmask2pixelids(pixmask), dtype="i"),
+                    np.frombuffer(s.read(npix*4), dtype=">f"),
+                    np.frombuffer(s.read(npix), dtype="b"),
+                    np.frombuffer(s.read(npix*4), dtype=">f")
+                ],
+                names=["id", "intensity", "channel", "time"]
+            )
         )
 
 
 class Event:
-    def __init__(self, event_id, bunch_id, pixinfo):
-        self.event_id = event_id
-        self.bunch_id = bunch_id
+    def __init__(self, event_nr, bunch_nr, pixinfo):
+        self.event_nr = event_nr
+        self.bunch_nr = bunch_nr
         self.pixinfo = pixinfo
+
+    def __repr__(self):
+        return f"Event {self.event_nr} (bunch {self.bunch_nr}) [{len(self.pixinfo)} pixels]"
 
 
 def read_uint(bytestream):
