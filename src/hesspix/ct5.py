@@ -8,6 +8,9 @@ import numpy as np
 
 
 class CT5Reader:
+    """
+    Reader class for CT5 pixel intensity data.
+    """
     def __init__(self, filename):
         self._fobj = f = uproot.open(filename)
         self._event_ids = f["DST_tree/EventHeader/fGlobalEvtNum"].array()
@@ -31,9 +34,16 @@ class CT5Reader:
             raise StopIteration
 
     def get_bunch(self, bunch_id):
-        pass
+        """
+        Get events for a given bunch ID.
+        """
+        indices = np.where(self._bunch_ids == bunch_id)[0]
+        return [self.get_event(idx) for idx in indices]
 
     def get_event(self, event_id):
+        """
+        Get event of a given event ID.
+        """
         raw = self._fobj["DST_tree/IntensityData_Clean0714NN2_5"].array(
             uproot.interpretation.jagged.AsJagged(
                 uproot.interpretation.numerical.AsDtype("b"),
@@ -66,22 +76,25 @@ class CT5Reader:
 
         return np.core.records.fromarrays(
             [
+                np.array(pixmask2pixelids(pixmask), dtype="i"),
                 np.frombuffer(s.read(npix*4), dtype=">f"),
                 np.frombuffer(s.read(npix), dtype="b"),
                 np.frombuffer(s.read(npix*4), dtype=">f")
             ],
-            names=["intensities", "channels", "times"]
+            names=["id", "intensity", "channel", "time"]
         )
+
+
+class Event:
+    def __init__(self, event_id, bunch_id, pixinfo):
+        self.event_id = event_id
+        self.bunch_id = bunch_id
+        self.pixinfo = pixinfo
 
 
 def read_uint(bytestream):
     return struct.unpack(">I", bytestream.read(4))[0]
 
-def read_byte(bytestream):
-    return struct.unpack("b", bytestream.read(1))[0]
-
-def read_float32(bytestream):
-    return struct.unpack(">f", bytestream.read(4))[0]
 
 def read_string(bytestream):
     n = 0
@@ -94,11 +107,20 @@ def read_string(bytestream):
         return ""
     return bytestream.read(n).decode()
 
-def print_set_bits_indices(arr):
-    for i, num in enumerate(arr):
+
+def pixmask2pixelids(mask):
+    """
+    Converts a pixel mask to pixel IDs by returning the indices of set
+    bits in the mask.
+
+    This function is rather slow and a good candidate for Numba.
+    """
+    pixel_ids = []
+    for i, num in enumerate(mask):
         for j in range(8):
             if num & (1 << j):
-                print(f"Bit 1 found at index {i * 8 + j}")
+                pixel_ids.append(i*8 + j)
+    return pixel_ids
 
 
 def count_set_bits(arr):
