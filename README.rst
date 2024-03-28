@@ -12,6 +12,31 @@ hesspix
 
 ``hesspix`` is a tiny library to read HESS pixel info from ROOT files.
 
+Usage
+~~~~~
+
+It's as easy as::
+
+  >>> import hesspix as hp
+
+  >>> r = hp.CT5Reader("gamma_20deg_180deg_run4151.dst.root")
+
+  >>> r.get_event(0)
+  rec.array([(696, 15.363794 , 3, 21.796875),
+             (702,  9.463919 , 3, 21.828125),
+             (854,  8.21018  , 3, 20.34375 ),
+             (862,  7.8234243, 3, 21.59375 ),
+             (880, 19.85337  , 3, 20.578125),
+             (889, 19.890633 , 3, 19.875   ),
+             (890,  8.490422 , 3, 18.890625),
+             (897, 11.9091625, 3, 20.46875 ),
+             (898,  8.9501295, 3, 20.265625),
+             (899, 18.064999 , 3, 20.      )],
+            dtype=[('id', '<i4'), ('intensity', '>f4'), ('channel', 'i1'), ('time', '>f4')])
+
+  >>> for event in r:
+          ...
+
 Installation
 ~~~~~~~~~~~~
 
