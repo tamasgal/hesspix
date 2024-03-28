@@ -40,17 +40,13 @@ It's as easy as::
 Installation
 ~~~~~~~~~~~~
 
-It is recommended to first create an isolated virtualenvironment to not interfere
-with other Python projects::
+``hesspix`` is a registered Python package. It can be installed using ``pip``::
 
-  git clone https://git.ecap.work/tgal/hesspix
-  cd hesspix
-  python3 -m venv venv
-  . venv/bin/activate
+  pip install hesspix
 
-Install directly from the Git server via ``pip`` (no cloneing needed)::
+To install the latest development version from the Git repository::
 
-  pip install git+https://git.ecap.work/tgal/hesspix
+  pip install git+https://github.com/tamasgal/hesspix
 
 Or clone the repository and run::
 
