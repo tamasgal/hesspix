@@ -11,10 +11,11 @@ class CT5Reader:
     """
     Reader class for CT5 pixel intensity data.
     """
-    def __init__(self, filename):
+    def __init__(self, filename, branch="DST_tree/IntensityData_Clean0714NN2_5"):
         self._fobj = f = uproot.open(filename)
         self._event_nrs = f["DST_tree/EventHeader/fGlobalEvtNum"].array()
         self._bunch_nrs = f["DST_tree/EventHeader/fGlobalBunchNum"].array()
+        self._branch = branch
 
         self._nevents = len(self._event_nrs)
 
@@ -56,7 +57,7 @@ class CT5Reader:
         """
         Get event of a given event ID (index in the file).
         """
-        raw = self._fobj["DST_tree/IntensityData_Clean0714NN2_5"].array(
+        raw = self._fobj[self._branch].array(
             uproot.interpretation.jagged.AsJagged(
                 uproot.interpretation.numerical.AsDtype("b"),
                 header_bytes=0),
