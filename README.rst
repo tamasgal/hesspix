@@ -12,16 +12,22 @@ It's as easy as::
 
     >>> r = hp.CT5Reader("gamma_20deg_180deg_run4151.dst.root")
 
+accessing events via a global index, as written in the ROOT branch::
+
     >>> r[0]
     Event 801 (bunch 0) [10 pixels]
 
     >>> r[23]
     Event 19607 (bunch 0) [3 pixels]
 
+Grabbing an event with a given event number and bunch number::
+
     >>> r.get(event_nr=3902, bunch_nr=0)
     Event 3902 (bunch 0) [18 pixels]
 
     >>> event = r.get(event_nr=3902, bunch_nr=0)
+
+The pixel information is stored in ``pixinfo``::
 
     >>> event.pixinfo
     rec.array([( 352, 18.27153 , 3, 20.9375  ),
@@ -43,6 +49,28 @@ It's as easy as::
             (1339, 10.908205, 3, 20.953125),
             (1341, 21.191723, 3, 21.546875)],
             dtype=[('id', '<i4'), ('intensity', '>f4'), ('channel', 'i1'), ('time', '>f4')])
+
+
+as a simple NumPy RecArray (struct of arrays)::
+
+    >>> event.pixinfo.intensity
+    array([18.27153 , 23.193665, 11.846128, 15.300814,  8.219065, 15.051192,
+            9.525627,  9.479142, 14.532091, 22.21212 , 11.263601, 16.932125,
+        13.045629, 13.618393, 12.267553,  8.492023, 10.908205, 21.191723],
+        dtype='>f4')
+
+Accessing individual elements yields "struct-like" instances::
+
+    >>> event.pixinfo[4]
+    (513, 8.219065, 3, 21.046875)
+
+    >>> event.pixinfo[4].time
+    21.046875
+
+    >>> event.pixinfo[4].channel
+    3
+
+Iterating through all the events in the file can be done with::
 
     >>> for event in r:
             ...
