@@ -1,7 +1,19 @@
 hesspix 
 =======
 
-``hesspix`` is a tiny library to read HESS pixel info from ROOT files.
+``hesspix`` is a tiny library to read HESS pixel info from ROOT files. No ROOT
+is required.
+
+Installation
+~~~~~~~~~~~~
+
+``hesspix`` is a registered Python package. It can be installed using ``pip``::
+
+  pip install hesspix
+
+To install the latest development version from the Git repository::
+
+  pip install git+https://github.com/tamasgal/hesspix
 
 Usage
 ~~~~~
@@ -74,28 +86,6 @@ Iterating through all the events in the file can be done with::
 
     >>> for event in r:
             ...
-
-Installation
-~~~~~~~~~~~~
-
-``hesspix`` is a registered Python package. It can be installed using ``pip``::
-
-  pip install hesspix
-
-To install the latest development version from the Git repository::
-
-  pip install git+https://github.com/tamasgal/hesspix
-
-Or clone the repository and run::
-
-  make install
-
-To install all the development dependencies, in case you want to contribute or
-run the test suite::
-
-  make install-dev
-  make test
-
 
 ---
 
