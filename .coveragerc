@@ -1,0 +1,15 @@
+[run]
+source = hesspix
+
+[report]
+omit =
+    src/hesspix/version.py
+exclude_lines =
+    pragma: no cover
+    raise AssertionError
+    raise NotImplementedError
+    if 0:
+    if __name__ == .__main__.:
+    if self.debug:
+    if settings.DEBUG
+    def __repr__
