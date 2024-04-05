@@ -77,7 +77,7 @@ class CT5Reader:
         masknbytes = read_uint(s)
         s.read(1)  # skip 1 byte, no idea why
 
-        pixmask = s.read(masknbytes)
+        pixmask = np.frombuffer(s.read(masknbytes), dtype="u1")
         npix = count_set_bits(pixmask)
 
         size = read_uint(s)  # total number of pixels
@@ -132,23 +132,12 @@ def pixmask2pixelids(mask):
     """
     Converts a pixel mask to pixel IDs by returning the indices of set
     bits in the mask.
-
-    This function is rather slow and a good candidate for Numba.
     """
-    pixel_ids = []
-    for i, num in enumerate(mask):
-        for j in range(8):
-            if num & (1 << j):
-                pixel_ids.append(i*8 + j)
-    return pixel_ids
+    return np.where(np.unpackbits(mask, bitorder="little"))[0]
 
 
 def count_set_bits(arr):
     """
-    Count the number of set bits in an array of integers.
+    Count the number of set bits in an array of uint8.
     """
-    count = 0
-    for num in arr:
-        for j in range(8):
-            count += (num >> j) & 1
-    return count
+    return np.count_nonzero(np.unpackbits(arr))
