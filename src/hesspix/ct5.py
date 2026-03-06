@@ -84,7 +84,13 @@ class CT5Reader:
 
         intensity_data_mode = read_uint(s)
 
-        if intensity_data_mode != 2: # enum value for `All`, presumable
+        if intensity_data_mode == 1: # enum value for `All`
+            pix_to_read = size
+            pix_ids = np.arange(size)
+        elif intensity_data_mode == 2:  # enum value for `ZeroSup`
+            pix_to_read = npix
+            pix_ids = pixmask2pixelids(pixmask)
+        else:
             raise ValueError(f"Unsupported intensity data mode: {intensity_data_mode}")
 
         return Event(
@@ -92,10 +98,10 @@ class CT5Reader:
             self._bunch_nrs[idx],
             np.core.records.fromarrays(
                 [
-                    np.array(pixmask2pixelids(pixmask), dtype="i"),
-                    np.frombuffer(s.read(npix*4), dtype=">f"),
-                    np.frombuffer(s.read(npix), dtype="b"),
-                    np.frombuffer(s.read(npix*4), dtype=">f")
+                    np.array(pix_ids, dtype="i"),
+                    np.frombuffer(s.read(pix_to_read*4), dtype=">f"),
+                    np.frombuffer(s.read(pix_to_read), dtype="b"),
+                    np.frombuffer(s.read(pix_to_read*4), dtype=">f")
                 ],
                 names=["id", "intensity", "channel", "time"]
             )
